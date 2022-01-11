@@ -4,7 +4,6 @@ const objectId    =   require('mongodb').ObjectId;
 const { IoTJobsDataPlane } = require("aws-sdk");
 const md5    =  require('md5-nodejs');
 
-
 module.exports = { 
     checkIsThisAlreadyExists : (email) => {
         return new Promise(resolve => {
@@ -173,16 +172,19 @@ module.exports = {
     },
 
 
-    checkthisOrderIsValid : (order_id) => {
+    checkthisOrderIsValidAndUpdateStatus : (order_id) => {
         return new Promise(resolve => {
             conn.then(async(db) => {
 
                 let count  = await db.collection('orders').countDocuments({_id : new objectId(order_id.toString() ), status : "new" });
+                if(count > 0){
+
+                    db.collection('orders').updateOne({_id : new objectId(order_id.toString() ), status : "new" }, {'$set' : {status : "submitted"}});
+                }
                 resolve(count);
             })
         })
     },
-
 
 
     getBuyOrders : () => {
@@ -224,6 +226,38 @@ module.exports = {
                 resolve(true);
             })
         })
-    }
+    },
 
+
+    checkOrderIsInNewStatus : (order_id) => {
+        return new Promise(resolve => {
+            conn.then(async(db) => {
+                let countOrder = await db.collection('orders').countDocuments({ _id : new objectId(order_id.toString()),   status: "new", order_type : "manul" });
+                if(countOrder > 0){
+                    db.collection('orders').updateOne({ _id : new objectId(order_id.toString()),   status: "new", order_type : "manul"},  {'$set' : {status : "sumbitted"}}, async(error, result) => {
+                        if(error){
+                            console.log('database have some serious issue!!!')
+                            resolve(true)
+                        }else{
+
+                            resolve(false)
+                        }
+                    });
+                }else{
+
+                    resolve(true)
+                }
+            })
+        })
+    },
+
+
+    getOrderWalletAddress : (order_id) => {
+        return new Promise(resolve => {
+            conn.then(async(db) => {
+                let order = await db.collection('orders').find({ _id : new objectId(order_id.toString()) }).toArray();
+                resolve(order[0]['wallet_address'])
+            })
+        })
+    }
 }

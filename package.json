@@ -11,7 +11,9 @@
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
     "debug": "~2.6.9",
+    "ethereum.js": "^0.3.0",
     "express": "~4.16.1",
+    "fs": "^0.0.1-security",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "md5-nodejs": "^1.0.3",
@@ -20,6 +22,8 @@
     "node-binance-api": "^0.13.1",
     "node-cron": "^3.0.0",
     "public-ip": "^5.0.0",
-    "socket.io": "^4.4.0"
+    "socket.io": "^4.4.0",
+    "solc": "^0.8.11",
+    "web3": "^1.6.1"
   }
 }
