@@ -25,20 +25,58 @@ module.exports = {
     makeUserLogin : (email, password ) => {
         return new Promise(resolve => {
             conn.then(async(db) => {
-                db.collection('users').findOne({email : (email.toLowerCase()).trim(),   password : md5(password), role : "user" }, async(error, result) => {
-                    if(error){
-
-                        let responseArray = {
-                            status  : 400,
-                            message : "DataBase Error"
+                let loginQuery = [
+                    {
+                        '$match' : {
+                            email      :  (email.toLowerCase()).trim(),   
+                            password   :  md5(password), 
+                            role       :  "user"
                         }
-                        res.status(400).send(responseArray);  
-                    }else{
-
-                        let userData = await result;
-                        resolve(userData);
-                    }
-                })
+                    },
+                    {
+                        '$project' : {
+                            _id           :   {'$toString' : '$_id'},
+                            email         :   '$email',
+                            full_name     :   '$full_name',
+                            profile_image :   '$profile_image',
+                            created_date  :   '$created_date',
+                            exhange       :   '$exchange',
+                            trading_mode  :   '$trading_mode'  //manual / auto
+                            
+                        }
+                    },
+                    {
+                        '$lookup' : {
+                            'from' : 'user_wallet',
+                            'let' : {
+                                'user_id' :  { '$toString' : '$_id'},
+                            },
+                            'pipeline' : [
+                                {
+                                '$match' : {
+                                    '$expr' : {
+                                        '$eq' : [
+                                                '$user_id',
+                                                '$$user_id'
+                                            ]
+                                        },
+                                    },
+                                },
+                                
+                                {
+                                '$project' : {
+                                        '_id'                :  {'$toString' : '$_id'},
+                                        'wallet_address'     :  '$wallet_address',
+                                       
+                                    }
+                                }
+                            ],
+                            'as' : 'wallets'
+                        }
+                    },
+                ]
+                let userData = await db.collection('users').aggregate(loginQuery).toArray(); 
+                resolve(userData);
             })
         })
     },
@@ -257,6 +295,26 @@ module.exports = {
             conn.then(async(db) => {
                 let order = await db.collection('orders').find({ _id : new objectId(order_id.toString()) }).toArray();
                 resolve(order[0]['wallet_address'])
+            })
+        })
+    },
+
+
+    saveData : (exchange,  trading_mode,  user_id,  wallet_address) => {
+        return new Promise(resolve => {
+            conn.then(async(db) => {
+                let addDataUnderUser = {
+                    exchange      :  exchange,
+                    trading_mode  :  trading_mode
+                }
+                let insertWallet = {
+                    wallet_address   : wallet_address,
+                    user_id          : user_id.toString(),
+                    created_date     :  new Date()
+                }
+                db.collection('users').updateOne({ _id : new objectId(user_id.toString())}, {'$set' : addDataUnderUser });
+                db.collection('user_wallet').insertOne(insertWallet)
+                resolve(true);
             })
         })
     }

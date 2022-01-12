@@ -12,15 +12,17 @@ cron.schedule('*/1 * * * * *', () => {
 
 cron.schedule('*/1 * * * * *', () => {
         
-    orderExpired.makeOrderExpired();
+    // orderExpired.makeOrderExpired();
 });
 
 cron.schedule('*/1 * * * * *', () => {
         
-    sell_service_run.sell_service();
+    // sell_service_run.sell_service();
 });
 
 cron.schedule('*/1 * * * * *', () => {
         
-    buy_service_run.buy_service();
+    // buy_service_run.buy_service();
 });
+
+// mother edit room stairs drastic little about hello burst cook kingdom giggle

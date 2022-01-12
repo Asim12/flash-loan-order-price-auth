@@ -2,6 +2,7 @@ var express  =  require('express');
 var router   =  express.Router();
 const helper =  require('../helper/helper')
 const md5    =  require('md5-nodejs');
+const { saveData } = require('../helper/helper');
 
 router.post('/register', async(req, res) => {
     if(req.body.email  && req.body.password){
@@ -73,6 +74,24 @@ router.post('/login', async(req, res) => {
     }
 })
 
+
+router.post('/saveUserProfileData', async(req, res) => {
+    if(req.body.user_id){
+
+        helper.saveData(req.body.exchange, req.body.trading_mode, req.body.user_id, req.body.wallet_address);
+        let responseArray = {  
+            status  : 200,
+            message : "data are saved",
+        }
+        res.status(200).send(responseArray);   
+    }else{
+        let responseArray = {
+            status  : 400,
+            message : "Pyaload missing!!!"
+        }
+        res.status(400).send(responseArray);   
+    }
+})
 
 router.post('/forgetPassword', async(req, res) => {
 
